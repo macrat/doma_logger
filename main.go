@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/fluent/fluent-logger-golang/fluent"
 )
 
 type Labels map[string]string
@@ -81,6 +83,39 @@ func (wr WriterReporter) Report(values []SensorValue) error {
 	return nil
 }
 
+type FluentReporter struct {
+	logger *fluent.Fluent
+	Tag    string
+}
+
+func NewFluentReporter(host string, port int, tag string) (fr FluentReporter, err error) {
+	fr.Tag = tag
+
+	fr.logger, err = fluent.New(fluent.Config{
+		FluentHost: host,
+		FluentPort: port,
+	})
+	return fr, err
+}
+
+func (fr FluentReporter) Close() {
+	fr.logger.Close()
+}
+
+func (fr FluentReporter) Report(values []SensorValue) error {
+	data := map[string]map[string]interface{} {}
+
+	for _, v := range values {
+		data[v.Name] = map[string] interface{} {
+			"value": v.Value,
+			"labels": (map[string]string)(v.Labels),
+			"timestamp": v.Timestamp,
+		}
+	}
+
+	return fr.logger.PostWithTime(fr.Tag, time.Now(), data)
+}
+
 type ReportRequest struct {
 	Reporter     Reporter
 	Interval     time.Duration
@@ -133,7 +168,13 @@ func (rs Reporters) Serve(sensor Sensor) error {
 
 func (rs Reporters) ServeForever(sensor Sensor, onError func(error)) {
 	for {
-		onError(rs.Serve(sensor))
+		time.Sleep(rs.NextReportingTime().Sub(time.Now()))
+
+		if values, err := sensor.Read(); err != nil {
+			onError(err)
+		} else if err = rs.Report(values); err != nil {
+			onError(err)
+		}
 	}
 }
 
@@ -176,12 +217,19 @@ func main() {
 		{Name: "dummy_number", Value: 0.8, Labels: Labels{"type": "b"}},
 	})}
 
+	fr, _ := NewFluentReporter("localhost", 24224, "doma.sensors")
+	defer fr.Close()
 	rs := Reporters{
 		{Reporter: WriterReporter{os.Stdout}, Interval: 5 * time.Second},
+		{Reporter: fr, Interval: 5 * time.Second},
 	}
 
 	pe := PrometheusExporter{"doma", ss}
 
-	go pe.ServeForever(":8888", func(err error) {})
-	rs.ServeForever(ss, func(err error) {})
+	go pe.ServeForever(":8888", func(err error) {
+		fmt.Println(err.Error())
+	})
+	rs.ServeForever(ss, func(err error) {
+		fmt.Println(err.Error())
+	})
 }
