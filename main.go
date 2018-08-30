@@ -109,7 +109,7 @@ func (fr FluentReporter) Report(values []SensorValue) error {
 		data[v.Name] = map[string] interface{} {
 			"value": v.Value,
 			"labels": (map[string]string)(v.Labels),
-			"timestamp": v.Timestamp,
+			"timestamp": v.Timestamp.Format("2006-01-02 15:04:05"),
 		}
 	}
 
