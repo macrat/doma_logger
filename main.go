@@ -41,7 +41,7 @@ type Sensor interface {
 type DummySensor []SensorValue
 
 func (ds DummySensor) Read() ([]SensorValue, error) {
-	for k, _ := range ds {
+	for k := range ds {
 		ds[k].Timestamp = time.Now()
 	}
 	return ([]SensorValue)(ds), nil
@@ -103,12 +103,12 @@ func (fr FluentReporter) Close() {
 }
 
 func (fr FluentReporter) Report(values []SensorValue) error {
-	data := map[string]map[string]interface{} {}
+	data := map[string]map[string]interface{}{}
 
 	for _, v := range values {
-		data[v.Name] = map[string] interface{} {
-			"value": v.Value,
-			"labels": (map[string]string)(v.Labels),
+		data[v.Name] = map[string]interface{}{
+			"value":     v.Value,
+			"labels":    (map[string]string)(v.Labels),
 			"timestamp": v.Timestamp.Format("2006-01-02 15:04:05"),
 		}
 	}
