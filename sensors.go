@@ -1,9 +1,9 @@
 package main
 
 import (
-	"time"
-	"strings"
 	"encoding/binary"
+	"strings"
+	"time"
 
 	"github.com/macrat/go-i2c"
 )
@@ -56,13 +56,13 @@ func (h HDC1000Sensor) Read() ([]SensorValue, error) {
 
 	return []SensorValue{
 		{
-			Name: prefix + "temperature",
-			Value: float64(binary.BigEndian.Uint16(data[:2])) / float64(0xFFFF) * 165.0 - 40.0,
+			Name:      prefix + "temperature",
+			Value:     float64(binary.BigEndian.Uint16(data[:2]))/float64(0xFFFF)*165.0 - 40.0,
 			Timestamp: timestamp,
 		},
 		{
-			Name: prefix + "humidity",
-			Value: float64(binary.BigEndian.Uint16(data[2:])) / float64(0xFFFF),
+			Name:      prefix + "humidity",
+			Value:     float64(binary.BigEndian.Uint16(data[2:])) / float64(0xFFFF),
 			Timestamp: timestamp,
 		},
 	}, nil
