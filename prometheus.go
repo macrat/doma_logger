@@ -6,12 +6,12 @@ import (
 )
 
 type PrometheusExporter struct {
-	Prefix  string
-	Sensors SensorSet
+	Prefix string
+	Sensor Sensor
 }
 
 func (pe PrometheusExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	values, err := pe.Sensors.Read()
+	values, err := pe.Sensor.Read()
 	if err != nil {
 		w.WriteHeader(500)
 		fmt.Fprint(w, err.Error())
