@@ -5,7 +5,7 @@ import (
 	"strings"
 	"encoding/binary"
 
-	"github.com/d2r2/go-i2c"
+	"github.com/macrat/go-i2c"
 )
 
 type Sensor interface {
