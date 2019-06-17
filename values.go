@@ -22,6 +22,20 @@ func (ls Labels) String() string {
 	return "{" + strings.Join(rs, ",") + "}"
 }
 
+func (x Labels) Merge(y Labels) Labels {
+	ls := make(Labels)
+
+	for k, v := range x {
+		ls[k] = v
+	}
+
+	for k, v := range y {
+		ls[k] = v
+	}
+
+	return ls
+}
+
 type SensorValue struct {
 	Name      string
 	Labels    Labels

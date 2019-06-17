@@ -8,6 +8,7 @@ import (
 type PrometheusExporter struct {
 	Prefix string
 	Sensor Sensor
+	Labels Labels
 }
 
 func (pe PrometheusExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,7 @@ func (pe PrometheusExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, v := range values {
-		fmt.Fprintf(w, "%s_%s%s %f %d\n", pe.Prefix, v.Name, v.Labels, v.Value, v.Timestamp.Unix())
+		fmt.Fprintf(w, "%s_%s%s %f %d\n", pe.Prefix, v.Name, v.Labels.Merge(pe.Labels), v.Value, v.Timestamp.Unix())
 	}
 }
 

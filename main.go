@@ -12,7 +12,7 @@ func main() {
 	fr, _ := NewFluentReporter("localhost", 24224, "doma.alpha.test")
 	defer fr.Close()
 
-	go PrometheusExporter{"doma", temphumid}.ServeForever(":9990", func(err error) {
+	go PrometheusExporter{"doma", temphumid, Labels{"node": "doma.alpha"}}.ServeForever(":9990", func(err error) {
 		fmt.Println(err.Error())
 	})
 
